@@ -98,7 +98,7 @@ int main()
             direction = Direction::stop;
         }
 
-        //Тоже рабочий вариант
+        //Тоже рабочий вариант.
         //Vector2f prohibitionMove = player.getPosition();
         //if (prohibitionMove.x < 50)
         //{
