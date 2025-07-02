@@ -1,19 +1,20 @@
-#include <SFML/Audio.hpp>
+ï»¿#include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 
 using namespace sf;
+using namespace std;
 
 
 /*
-* ïîëå 16 êîëîíîê íà 14 ñòðîê (1 êëåòêà 50 íà 50)
-* èãðîê
-* óïðàâëåíèå
-* ñòðåëÿòü èãðîêà
-* âðàã 1 è íàó÷èòü åå óìèðàòü
-* äîáàâèòü ñ÷åò÷èê î÷êîâ
-* ãåíåðàöèÿ âðàãîâ
-* äâèæåíèå âðàãîâ íà èãðîêà
-* äîáàâèòü æèçíè èãðîêà
+* Ð¿Ð¾Ð»Ðµ 16 ÐºÐ¾Ð»Ð¾Ð½Ð¾Ðº Ð½Ð° 14 ÑÑ‚Ñ€Ð¾Ðº (1 ÐºÐ»ÐµÑ‚ÐºÐ° 50 Ð½Ð° 50)
+* Ð¸Ð³Ñ€Ð¾Ðº
+* ÑƒÐ¿Ñ€Ð°Ð²Ð»ÐµÐ½Ð¸Ðµ
+* ÑÑ‚Ñ€ÐµÐ»ÑÑ‚ÑŒ Ð¸Ð³Ñ€Ð¾ÐºÐ°
+* Ð²Ñ€Ð°Ð³ 1 Ð¸ Ð½Ð°ÑƒÑ‡Ð¸Ñ‚ÑŒ ÐµÐµ ÑƒÐ¼Ð¸Ñ€Ð°Ñ‚ÑŒ
+* Ð´Ð¾Ð±Ð°Ð²Ð¸Ñ‚ÑŒ ÑÑ‡ÐµÑ‚Ñ‡Ð¸Ðº Ð¾Ñ‡ÐºÐ¾Ð²
+* Ð³ÐµÐ½ÐµÑ€Ð°Ñ†Ð¸Ñ Ð²Ñ€Ð°Ð³Ð¾Ð²
+* Ð´Ð²Ð¸Ð¶ÐµÐ½Ð¸Ðµ Ð²Ñ€Ð°Ð³Ð¾Ð² Ð½Ð° Ð¸Ð³Ñ€Ð¾ÐºÐ°
+* Ð´Ð¾Ð±Ð°Ð²Ð¸Ñ‚ÑŒ Ð¶Ð¸Ð·Ð½Ð¸ Ð¸Ð³Ñ€Ð¾ÐºÐ°
 */
 /**/
 //--------------------------------------------------------------------------
@@ -35,7 +36,7 @@ Vector2f convertPosition(Vector2f pos)
     return position;
 }
 //--------------------------------------------------------------------------
-enum class Direction//ïåðå÷èñëåíèå, õðàíèò âàðèàíòû íàïðàâëåíèÿ äâèæåíèÿ
+enum class Direction//Ð¿ÐµÑ€ÐµÑ‡Ð¸ÑÐ»ÐµÐ½Ð¸Ðµ, Ñ…Ñ€Ð°Ð½Ð¸Ñ‚ Ð²Ð°Ñ€Ð¸Ð°Ð½Ñ‚Ñ‹ Ð½Ð°Ð¿Ñ€Ð°Ð²Ð»ÐµÐ½Ð¸Ñ Ð´Ð²Ð¸Ð¶ÐµÐ½Ð¸Ñ
 {
     stop,
 
@@ -85,11 +86,11 @@ int main()
         {
             Vector2f pos = igrok.getPosition();
 
-            if (direction == Direction::left)
+            if (direction == Direction::left && pos.x > 50)
             {
                 pos.x -= 50.f;
             }
-            if (direction == Direction::right)
+            if (direction == Direction::right && pos.x < 600)
             {
                 pos.x += 50.f;
             }
@@ -97,6 +98,17 @@ int main()
             igrok.setPosition(pos);
             direction = Direction::stop;
         }
+
+        //Ð¢Ð¾Ð¶Ðµ Ñ€Ð°Ð±Ð¾Ñ‡Ð¸Ð¹ Ð²Ð°Ñ€Ð¸Ð°Ð½Ñ‚
+        //Vector2f prohibitionMove = igrok.getPosition();
+        //if (prohibitionMove.x < 50)
+        //{
+        //    direction = Direction::right;
+        //}
+        //if (prohibitionMove.x > 600)
+        //{
+        //    direction = Direction::left;
+        //}
 
         // Clear screen
         window.clear();
