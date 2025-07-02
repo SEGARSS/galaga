@@ -49,11 +49,11 @@ int main()
     sf::RenderWindow window(sf::VideoMode({ 800, 700 }), "SFML window");
 
     // Load a texture
-    const sf::Texture texture("igrok.png");
+    const sf::Texture texture("player.png");
 
     // Create a sprite
-    sf::Sprite igrok(texture);
-    igrok.setPosition(getPosition(7, 12));
+    sf::Sprite player(texture);
+    player.setPosition(getPosition(7, 12));
 
     Direction direction = Direction::stop;
 
@@ -83,7 +83,7 @@ int main()
 
         if (direction != Direction::stop)
         {
-            Vector2f pos = igrok.getPosition();
+            Vector2f pos = player.getPosition();
 
             if (direction == Direction::left && pos.x > 50)
             {
@@ -94,12 +94,12 @@ int main()
                 pos.x += 50.f;
             }
 
-            igrok.setPosition(pos);
+            player.setPosition(pos);
             direction = Direction::stop;
         }
 
         //Тоже рабочий вариант
-        //Vector2f prohibitionMove = igrok.getPosition();
+        //Vector2f prohibitionMove = player.getPosition();
         //if (prohibitionMove.x < 50)
         //{
         //    direction = Direction::right;
@@ -113,7 +113,7 @@ int main()
         window.clear();
 
         // Draw it
-        window.draw(igrok);
+        window.draw(player);
 
         // Update the window
         window.display();
