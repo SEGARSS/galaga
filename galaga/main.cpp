@@ -1,9 +1,19 @@
 ﻿#include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 
+#include <vector>
+#include <iostream>
+#include <chrono>
+
 using namespace sf;
 using namespace std;
 
+/*
+* дз
+* добавить врага
+* Попал ли по врагу или нет ?
+* Если попал, то вывести надпись про это
+*/
 
 /*
 * поле 16 колонок на 14 строк (1 клетка 50 на 50)
@@ -53,13 +63,17 @@ int main()
     sf::RenderWindow window(sf::VideoMode({ 800, 700 }), "SFML window");
 
     // Load a texture
-    const sf::Texture texture("player.png");
+    const sf::Texture playerTexture("player.png");
+    const sf::Texture bulletTexture("bullet.png");
 
     // Create a sprite
-    sf::Sprite player(texture);
+    sf::Sprite player(playerTexture);
     player.setPosition(getPosition(7, 12));
 
-    vector <Sprite> bullets;
+    vector <Sprite> bulletsPlayer; // Создаём вектор картинок (пулек)
+
+    Clock clock; // Создаём часы (начало таймера)
+    chrono::milliseconds tick(500); // После какого времени таймер начал делать всё сначала или сброс.
 
     Direction direction = Direction::stop;
 
@@ -83,6 +97,20 @@ int main()
                 {
                     direction = Direction::left;
                 }
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
+                {
+                    /*
+                    Создаём переменную newBullet которая будет только сдесь, и туда сразу помещаем текстуру пулек.
+              
+                    */
+                    sf::Sprite newBullet(bulletTexture);//Создаём переменную newBullet которая будет только сдесь, и туда сразу помещаем текстуру пулек.
+                    Vector2f pos = player.getPosition();//Запрашиваем позицию игрока, чтобы пульки стрелял там где игрок и вылитали от него.
+                    //Ниже, попровляем корддиныты пули, чтобы по центру от игрока стреляли и выше него. (тоесть от его центра носа попровляем)
+                    pos.y -= 50.f; //Выше
+                    pos.x += 12.5f;//Правее                    
+                    newBullet.setPosition(pos);//После всех поправок кординат, ложим эти кординаты в нашу переменную newBullet (уже с готовыми поправленными кординатами)
+                    bulletsPlayer.push_back(newBullet);//И возвращем это в нашь вектор пуль, чтобы могли по пробелу стрелять ими.
+                }
             }
         }
 
@@ -103,22 +131,28 @@ int main()
             direction = Direction::stop;
         }
 
-        //Тоже рабочий вариант.
-        //Vector2f prohibitionMove = player.getPosition();
-        //if (prohibitionMove.x < 50)
-        //{
-        //    direction = Direction::right;
-        //}
-        //if (prohibitionMove.x > 600)
-        //{
-        //    direction = Direction::left;
-        //}
+        if (clock.getElapsedTime() > Time(tick)) //Начальное время 0 > 500.
+        {
+            clock.restart();// и как только это произошло (по условию стало больше 500, делаем рестарт.
+
+            for (int i = 0; i < bulletsPlayer.size(); i++) // Проходим по всему вектору пулек
+            {
+                Vector2f pos = bulletsPlayer[i].getPosition(); // Запрашиваем позицию пули.
+                pos.y -= 50.f; //Назначаем ей направление, куда ей лететь.
+                bulletsPlayer[i].setPosition(pos); // И уже ставим эту позию для пули.
+            }
+        }
 
         // Clear screen
         window.clear();
 
         // Draw it
         window.draw(player);
+
+        for (int i = 0; i < bulletsPlayer.size(); i++)
+        {
+            window.draw(bulletsPlayer[i]);
+        }
 
         // Update the window
         window.display();
