@@ -10,6 +10,10 @@ using namespace std;
 * игрок
 * управление
 * стрелять игрока
+* - вектор с ракетами, которые есть на экране сейчас
+* - таймер, по которому будем двигать наши ракеты
+* - добавить событие - выстрел (по кнопке пробел)
+* - удалять ракеты при выходе из зоны видимости экрана
 * враг 1 и научить ее умирать
 * добавить счетчик очков
 * генерация врагов
@@ -55,6 +59,8 @@ int main()
     sf::Sprite igrok(texture);
     igrok.setPosition(getPosition(7, 12));
 
+    vector <Sprite> bullets;
+
     Direction direction = Direction::stop;
 
     // Start the game loop
@@ -79,7 +85,6 @@ int main()
                 }
             }
         }
-
 
         if (direction != Direction::stop)
         {
