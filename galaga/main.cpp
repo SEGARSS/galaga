@@ -65,10 +65,14 @@ int main()
     // Load a texture
     const sf::Texture playerTexture("player.png");
     const sf::Texture bulletTexture("bullet.png");
+    const sf::Texture enemyTexture("enemy.png");
 
     // Create a sprite
     sf::Sprite player(playerTexture);
     player.setPosition(getPosition(7, 12));
+
+    sf::Sprite enemy(enemyTexture);
+    enemy.setPosition(getPosition(7,1));
 
     vector <Sprite> bulletsPlayer; // Создаём вектор картинок (пулек)
 
@@ -140,14 +144,31 @@ int main()
                 Vector2f pos = bulletsPlayer[i].getPosition(); // Запрашиваем позицию пули.
                 pos.y -= 50.f; //Назначаем ей направление, куда ей лететь.
                 bulletsPlayer[i].setPosition(pos); // И уже ставим эту позию для пули.
-            }
+
+                Vector2f posEnemy = enemy.getPosition();
+                if (pos.y == posEnemy.y)
+                {
+                    cout << "Hit! \n";
+                }
+            }            
         }
+
+        //for (int i = 0; i < bulletsPlayer.size(); i++)
+        //{
+        //    Vector2f posBullets = bulletsPlayer[i].getPosition();
+        //    Vector2f posEnemy = enemy.getPosition();
+        //    if (posBullets.y == posEnemy.y)
+        //    {
+        //        cout << "Hit! \n";
+        //    }
+        //}
 
         // Clear screen
         window.clear();
 
         // Draw it
         window.draw(player);
+        window.draw(enemy);
 
         for (int i = 0; i < bulletsPlayer.size(); i++)
         {
