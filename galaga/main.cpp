@@ -160,7 +160,6 @@ int main()
             if (posBullets.y == posEnemy.y)
             {
                 cout << "Hit! \n";
-                i == 0;
             }
         }
 
