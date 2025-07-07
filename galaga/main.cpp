@@ -145,23 +145,24 @@ int main()
                 pos.y -= 50.f; //Назначаем ей направление, куда ей лететь.
                 bulletsPlayer[i].setPosition(pos); // И уже ставим эту позию для пули.
 
-                Vector2f posEnemy = enemy.getPosition();
-                if (pos.y == posEnemy.y)
-                {
-                    cout << "Hit! \n";
-                }
+                //Vector2f posEnemy = enemy.getPosition();
+                //if (pos.y == posEnemy.y)
+                //{
+                //    cout << "Hit! \n";
+                //}
             }            
         }
 
-        //for (int i = 0; i < bulletsPlayer.size(); i++)
-        //{
-        //    Vector2f posBullets = bulletsPlayer[i].getPosition();
-        //    Vector2f posEnemy = enemy.getPosition();
-        //    if (posBullets.y == posEnemy.y)
-        //    {
-        //        cout << "Hit! \n";
-        //    }
-        //}
+        for (int i = 0; i < bulletsPlayer.size(); i++)
+        {
+            Vector2f posBullets = bulletsPlayer[i].getPosition();
+            Vector2f posEnemy = enemy.getPosition();
+            if (posBullets.y == posEnemy.y)
+            {
+                cout << "Hit! \n";
+                i == 0;
+            }
+        }
 
         // Clear screen
         window.clear();
