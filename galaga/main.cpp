@@ -260,8 +260,6 @@ int main()
             window.draw(bulletsPlayer[i]);
         }
 
-        //window.draw(text);
-
         // Update the window
         window.display();
     }
