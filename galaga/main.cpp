@@ -146,11 +146,10 @@ int main()
                 bulletsPlayer[i].setPosition(pos); // И уже ставим эту позию для пули.
 
                 Vector2f posEnemy = enemy.getPosition();
-                if (pos.y == posEnemy.y || pos.x <= posEnemy.x)
+                if (pos.y == posEnemy.y)
                 {
                     cout << "Hit! \n";
                 }
-                else if (pos.y == posEnemy.y || pos.x != posEnemy.x);
             }            
         }
 
