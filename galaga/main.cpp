@@ -117,16 +117,30 @@ int main()
 {
     int level = 0;
     vector<vector<Vector2f>> enemiesPositions;
+
     enemiesPositions.push_back(
         {
         convertColStrToPosition(5, 1),
         });
+
     enemiesPositions.push_back(
         {
         convertColStrToPosition(5, 1),
         convertColStrToPosition(6, 1),
         convertColStrToPosition(7, 1),
         });
+
+    enemiesPositions.push_back(
+        {
+        convertColStrToPosition(2, 1),
+        convertColStrToPosition(4, 2),
+        convertColStrToPosition(6, 3),
+        convertColStrToPosition(8, 3),
+        convertColStrToPosition(10, 2),
+        convertColStrToPosition(12, 1),
+        });
+
+    enemiesPositions.push_back({});
 
     // Create the main window
     sf::RenderWindow window(sf::VideoMode({ 800, 700 }), "SFML window");
@@ -147,8 +161,7 @@ int main()
     }
 
     Clock clock; // Создаём часы (начало таймера)
-    chrono::milliseconds tick(500); // После какого времени таймер начал делать всё сначала или сброс.
-
+    chrono::milliseconds tick(100); // После какого времени таймер начал делать всё сначала или сброс.
 
     const Font font("ARIAL.TTF");
 
@@ -157,6 +170,14 @@ int main()
     text.setStyle(Text::Bold);//Стиль текста
     text.setFillColor(Color::Blue);//Цвет текста
     text.setPosition(convertColStrToPosition(13, 1));
+
+    bool gameWin = false;
+
+    Text gameWinText(font, L"Подзравляю, Вы выиграли Игру!"); //L - чтоб были русские буквы вместо крякозябры.
+    gameWinText.setCharacterSize(40); //Размер текста
+    gameWinText.setStyle(Text::Bold);//Стиль текста
+    gameWinText.setFillColor(Color::Blue);//Цвет текста
+    gameWinText.setPosition(sf::Vector2f(50.0f - 10, 300.0f - 60));
 
     int ochki = 0;
 
@@ -238,16 +259,24 @@ int main()
             }
         }
 
-        if (enemiesPlayer.empty()) 
+        if (gameWin == false)
         {
-            ++level;
-            for (int i = 0; i < enemiesPositions[level].size(); ++i) 
+            if (enemiesPlayer.empty())
             {
-                Sprite enemyTmp1(enemyTexture);
-                enemyTmp1.setPosition(enemiesPositions[level][i]);
-                enemiesPlayer.push_back(enemyTmp1);
+                ++level;
+                for (int i = 0; i < enemiesPositions[level].size(); ++i)
+                {
+                    Sprite enemyTmp1(enemyTexture);
+                    enemyTmp1.setPosition(enemiesPositions[level][i]);
+                    enemiesPlayer.push_back(enemyTmp1);                    
+                }                
+            } 
+            if (level == 3)
+            {
+                gameWin = true;
             }
         }
+        
 
         // Clear screen
         window.clear();
@@ -267,6 +296,11 @@ int main()
         for (int i = 0; i < bulletsPlayer.size(); i++)
         {
             window.draw(bulletsPlayer[i]);
+        }
+
+        if (gameWin)
+        {
+            window.draw(gameWinText);
         }
 
         // Update the window
