@@ -113,11 +113,56 @@ private:
    Sprite player;
 };
 //-------------------------------------------------------------------------------------------------------
+class Enemy
+{
+public:
+    Enemy()
+    : enemyTexture("enemy.png"), enemy(enemyTexture), level(0)
+    {
+
+    };
+
+    //vector<vector<Vector2f>> enemiesPositions;
+
+
+    //void enemies(vector <Sprite> &enemiesPlayer)
+    //{
+    //    
+    //    for (int i = 0; i < enemiesPositions[level].size(); ++i)
+    //    {
+    //        Sprite enemyTmp1(enemyTexture);
+    //        enemyTmp1.setPosition(enemiesPositions[level][i]);
+    //        enemiesPlayer.push_back(enemyTmp1);
+    //    }
+    //}
+
+    Sprite &getEnemySprite()
+    {
+        return enemy;
+    }
+
+    //int getLevele()
+    //{
+    //    int level;
+    //}
+
+    //int setLevele()
+    //{
+    //    return level;
+    //}
+
+    int level;
+
+private:
+    Texture enemyTexture;
+    Sprite enemy;
+};
+//-------------------------------------------------------------------------------------------------------
 int main()
 {
-    int level = 0;
+    //int level = 0;
+    
     vector<vector<Vector2f>> enemiesPositions;
-
     enemiesPositions.push_back(
         {
         convertColStrToPosition(5, 1),
@@ -145,18 +190,17 @@ int main()
     // Create the main window
     sf::RenderWindow window(sf::VideoMode({ 800, 700 }), "SFML window");
 
-    // Load a texture
-    const sf::Texture enemyTexture("enemy.png");
-
     Player player;
     vector <Sprite> bulletsPlayer; // Создаём вектор картинок (пулек)
     Direction direction = Direction::stop;
 
+    Enemy enemy;
     vector <Sprite> enemiesPlayer; // Создаём вектор картинок (врагов)
-    for (int i = 0; i < enemiesPositions[level].size(); ++i) 
+    
+    for (int i = 0; i < enemiesPositions[enemy.level].size(); ++i)
     {
-        Sprite enemyTmp1(enemyTexture);
-        enemyTmp1.setPosition(enemiesPositions[level][i]);
+        Sprite enemyTmp1(enemy.getEnemySprite());
+        enemyTmp1.setPosition(enemiesPositions[enemy.level][i]);
         enemiesPlayer.push_back(enemyTmp1);
     }
 
@@ -263,15 +307,15 @@ int main()
         {
             if (enemiesPlayer.empty())
             {
-                ++level;
-                for (int i = 0; i < enemiesPositions[level].size(); ++i)
+                ++ enemy.level;
+                for (int i = 0; i < enemiesPositions[enemy.level].size(); ++i)
                 {
-                    Sprite enemyTmp1(enemyTexture);
-                    enemyTmp1.setPosition(enemiesPositions[level][i]);
+                    Sprite enemyTmp1(enemy.getEnemySprite());
+                    enemyTmp1.setPosition(enemiesPositions[enemy.level][i]);
                     enemiesPlayer.push_back(enemyTmp1);                    
                 }                
             } 
-            if (level == 3)
+            if (enemy.level == 3)
             {
                 gameWin = true;
             }
