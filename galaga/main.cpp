@@ -143,12 +143,12 @@ public:
 
     //int getLevele()
     //{
-    //    int level;
+    //    return level;
     //}
 
-    //int setLevele()
+    //void setLevele(int lev)
     //{
-    //    return level;
+    //    level = lev;
     //}
 
     int level;
@@ -156,6 +156,7 @@ public:
 private:
     Texture enemyTexture;
     Sprite enemy;
+    
 };
 //-------------------------------------------------------------------------------------------------------
 int main()
@@ -307,7 +308,7 @@ int main()
         {
             if (enemiesPlayer.empty())
             {
-                ++ enemy.level;
+                ++enemy.level; // Как решить?
                 for (int i = 0; i < enemiesPositions[enemy.level].size(); ++i)
                 {
                     Sprite enemyTmp1(enemy.getEnemySprite());
