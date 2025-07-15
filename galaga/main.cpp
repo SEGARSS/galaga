@@ -343,6 +343,7 @@ int main()
             clockEnemyMovement.restart();
             for (int i = 0; i < enemiesPlayer.size(); i++)
             {
+
             }
         }
         
