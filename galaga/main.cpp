@@ -201,6 +201,9 @@ int main()
     Clock clockEnemyShoot; // Создаём часы (начало таймера)
     chrono::milliseconds tickEnemyShoot(1500); // После какого времени таймер начал делать всё сначала или сброс.
 
+    Clock clockEnemyMovement; // Создаём часы (начало таймера)
+    chrono::milliseconds clockEnemyMovement(1500); // После какого времени таймер начал делать всё сначала или сброс.
+
     random_device rd;
     mt19937 gen(rd());
 
@@ -334,6 +337,15 @@ int main()
                 gameWin = true;
             }
         }
+
+        if (clockEnemyMovement.getElapsedTime() > Time(clockEnemyMovement))
+        {
+            clockEnemyMovement.restart();
+            for (int i = 0; i < enemiesPlayer.size(); i++)
+            {
+            }
+        }
+        
 
         // Clear screen
         window.clear();
