@@ -436,9 +436,7 @@ int main()
                     enemiesPlayer[i].move();
                 }
             }
-        }
-        
-        
+        }        
 
         // Clear screen
         window.clear();
