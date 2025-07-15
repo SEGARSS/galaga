@@ -299,7 +299,8 @@ int main()
                 }
             }
 
-            for (int i = 0; i < bulletsEnemies.size(); ++i) {
+            for (int i = 0; i < bulletsEnemies.size(); ++i) 
+            {
                 Vector2f pos = bulletsEnemies[i].getPosition(); // Запрашиваем позицию пули.
                 pos.y += 50.f; //Назначаем ей направление, куда ей лететь.
                 bulletsEnemies[i].setPosition(pos); // И уже ставим эту позию для пули.
@@ -309,7 +310,8 @@ int main()
         if (clockEnemyShoot.getElapsedTime() > Time(tickEnemyShoot)) //Начальное время 0 > 1500.
         {
             clockEnemyShoot.restart();
-            if (!enemiesPlayer.empty()) {
+            if (!enemiesPlayer.empty()) 
+            {
                 uniform_int_distribution<> distrib(0, enemiesPlayer.size() - 1);
                 enemiesPlayer[distrib(gen)].shoot(bulletsEnemies);
             }
@@ -332,7 +334,6 @@ int main()
                 gameWin = true;
             }
         }
-
 
         // Clear screen
         window.clear();
