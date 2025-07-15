@@ -106,13 +106,34 @@ public:
         return player.getPosition();
     }
 
+    void resetPosition()
+    {
+        player.setPosition(convertColStrToPosition(7, 12));
+    }
+
     Sprite& getPlayerSprite()
     {
         return player;
     }
 
+    int getLife()
+    {
+        return life;
+    }
+
+    void setLife(int l)
+    {
+        life = l;
+    }
+
+    void livesReduce()
+    {
+        life --;
+    }
+
 private:
     Sprite player;
+    int life = 3;
 };
 //-------------------------------------------------------------------------------------------------------
 
@@ -143,6 +164,13 @@ public:
         pos.x += 37.5f;//Правее                    
         newBullet.setPosition(pos);//После всех поправок кординат, ложим эти кординаты в нашу переменную newBullet (уже с готовыми поправленными кординатами)
         bulletsEnemies.push_back(newBullet);//И возвращем это в нашь вектор пуль, чтобы могли по пробелу стрелять ими.
+    }
+
+    void move()
+    {
+        Vector2f pos = enemy.getPosition();
+        pos.y += 50;
+        enemy.setPosition(pos);
     }
 
 private:
@@ -202,7 +230,7 @@ int main()
     chrono::milliseconds tickEnemyShoot(1500); // После какого времени таймер начал делать всё сначала или сброс.
 
     Clock clockEnemyMovement; // Создаём часы (начало таймера)
-    chrono::milliseconds clockEnemyMovement(1500); // После какого времени таймер начал делать всё сначала или сброс.
+    chrono::milliseconds tickEnemyMovement(3000); // После какого времени таймер начал делать всё сначала или сброс.
 
     random_device rd;
     mt19937 gen(rd());
@@ -215,7 +243,14 @@ int main()
     text.setFillColor(Color::Blue);//Цвет текста
     text.setPosition(convertColStrToPosition(13, 1));
 
+    Text lifesText(font, L":Жизни 3"); //L - чтоб были русские буквы вместо крякозябры.
+    lifesText.setCharacterSize(30); //Размер текста
+    lifesText.setStyle(Text::Bold);//Стиль текста
+    lifesText.setFillColor(Color::Blue);//Цвет текста
+    lifesText.setPosition(convertColStrToPosition(13, 3));
+
     bool gameWin = false;
+    bool gameOver = false;
 
     Text gameWinText(font, L"Подзравляю, Вы выиграли Игру!"); //L - чтоб были русские буквы вместо крякозябры.
     gameWinText.setCharacterSize(40); //Размер текста
@@ -223,34 +258,63 @@ int main()
     gameWinText.setFillColor(Color::Blue);//Цвет текста
     gameWinText.setPosition(sf::Vector2f(50.0f - 10, 300.0f - 60));
 
+    Text gameOverText(font, L"Ты лузер, проиграл!"); //L - чтоб были русские буквы вместо крякозябры.
+    gameOverText.setCharacterSize(60); //Размер текста
+    gameOverText.setStyle(Text::Bold);//Стиль текста
+    gameOverText.setFillColor(Color::Red);//Цвет текста
+    gameOverText.setPosition(sf::Vector2f(120.0f - 60, 300.0f - 60));
+
     int ochki = 0;
 
     // Start the game loop
     while (window.isOpen())
     {
         // Process events
-        while (const std::optional event = window.pollEvent())
-        {
-            // Close window: exit
-            if (event->is<sf::Event::Closed>())
-                window.close();
+		while (const std::optional event = window.pollEvent())
+		{
+			// Close window: exit
+			if (event->is<sf::Event::Closed>())
+				window.close();
 
-            if (event->is<Event::KeyPressed>())
-            {
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) || Keyboard::isKeyPressed(sf::Keyboard::Key::D))
-                {
-                    direction = Direction::right;
-                }
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) || Keyboard::isKeyPressed(sf::Keyboard::Key::A))
-                {
-                    direction = Direction::left;
-                }
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
-                {
-                    player.shoot(bulletsPlayer);
-                }
-            }
-        }
+
+			if (event->is<Event::KeyPressed>())
+			{
+				if (gameOver == false)
+				{
+					if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) || Keyboard::isKeyPressed(sf::Keyboard::Key::D))
+					{
+						direction = Direction::right;
+					}
+					if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) || Keyboard::isKeyPressed(sf::Keyboard::Key::A))
+					{
+						direction = Direction::left;
+					}
+					if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
+					{
+						player.shoot(bulletsPlayer);
+					}
+				}
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Enter))
+				{
+                    if (gameOver == true || gameWin == true)
+                    {
+                        level = -1;
+                        enemiesPlayer.clear();
+                        player.setLife(3);
+                        ochki = 0;
+                        player.resetPosition();
+                        gameOver = false;
+                        gameWin = false;
+                        clock.restart();
+                        clockEnemyShoot.restart();
+                        clockEnemyMovement.restart();
+                        bulletsEnemies.clear();
+                        bulletsPlayer.clear();
+                    }					
+				}
+			}
+		}
+	
 
         player.move(direction);
 
@@ -302,24 +366,47 @@ int main()
                 }
             }
 
-            for (int i = 0; i < bulletsEnemies.size(); ++i) 
+            //Попала ли пуля в игрока
+            for (int i = 0; i < bulletsEnemies.size(); ) 
             {
                 Vector2f pos = bulletsEnemies[i].getPosition(); // Запрашиваем позицию пули.
                 pos.y += 50.f; //Назначаем ей направление, куда ей лететь.
                 bulletsEnemies[i].setPosition(pos); // И уже ставим эту позию для пули.
+
+                FloatRect playerRect = player.getPlayerSprite().getGlobalBounds();
+                FloatRect bulletRect = bulletsEnemies[i].getGlobalBounds();
+
+                std::optional <FloatRect> intersect = bulletRect.findIntersection(playerRect);
+                if (intersect.has_value())
+                {
+                    bulletsEnemies.erase(bulletsEnemies.begin() + i);
+                    //player.getLife();
+                    player.livesReduce();
+                    cout << "Hit \n";
+                    if (player.getLife() == 0)
+                    {
+                        gameOver = true;
+                    }   
+                }
+                else
+                {
+                    ++i;
+                }
             }
         }
 
-        if (clockEnemyShoot.getElapsedTime() > Time(tickEnemyShoot)) //Начальное время 0 > 1500.
+        if (gameOver == false)
         {
-            clockEnemyShoot.restart();
-            if (!enemiesPlayer.empty()) 
+            if (clockEnemyShoot.getElapsedTime() > Time(tickEnemyShoot)) //Начальное время 0 > 1500.
             {
-                uniform_int_distribution<> distrib(0, enemiesPlayer.size() - 1);
-                enemiesPlayer[distrib(gen)].shoot(bulletsEnemies);
+                clockEnemyShoot.restart();
+                if (!enemiesPlayer.empty())
+                {
+                    uniform_int_distribution<> distrib(0, enemiesPlayer.size() - 1);
+                    enemiesPlayer[distrib(gen)].shoot(bulletsEnemies);
+                }
             }
         }
-
 
         if (gameWin == false)
         {
@@ -338,14 +425,19 @@ int main()
             }
         }
 
-        if (clockEnemyMovement.getElapsedTime() > Time(clockEnemyMovement))
+        //Движение врагов
+        if (gameOver == false)
         {
-            clockEnemyMovement.restart();
-            for (int i = 0; i < enemiesPlayer.size(); i++)
+            if (clockEnemyMovement.getElapsedTime() > Time(tickEnemyMovement))
             {
-
+                clockEnemyMovement.restart();
+                for (int i = 0; i < enemiesPlayer.size(); i++)
+                {
+                    enemiesPlayer[i].move();
+                }
             }
         }
+        
         
 
         // Clear screen
@@ -357,6 +449,9 @@ int main()
         //Рисуем вывод очков на доске
         text.setString(L"очки " + std::to_string(ochki));//Конвертируем int в string.(to_string)
         window.draw(text);
+
+        lifesText.setString(L"Жизни " + std::to_string(player.getLife()));//Конвертируем int в string.(to_string)
+        window.draw(lifesText);
 
         for (int i = 0; i < enemiesPlayer.size(); i++)
         {
@@ -376,6 +471,11 @@ int main()
         if (gameWin)
         {
             window.draw(gameWinText);
+        }
+
+        if (gameOver)
+        {
+            window.draw(gameOverText);
         }
 
         // Update the window
