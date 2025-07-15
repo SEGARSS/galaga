@@ -4,10 +4,14 @@
 #include <vector>
 #include <iostream>
 #include <chrono>
+#include <random>
 
 using namespace sf;
 using namespace std;
 
+Texture enemyTexture("enemy.png");
+Texture bulletTexture("bullet.png");
+Texture playerTexture("player.png");
 /*
 * дз
 * добавить врага
@@ -57,16 +61,16 @@ enum class Direction//перечисление, хранит варианты н
     right
 };
 //------------------------------------------------------------------------------------------------------------------------------------------
-class Player 
+class Player
 {
 public:
     Player()
-    : bulletTexture("bullet.png"), playerTexture("player.png"), player(playerTexture)  
+        : player(playerTexture)
     {
         player.setPosition(convertColStrToPosition(7, 12));
     };
 
-    void shoot(vector<Sprite> &bulletsPlayer) 
+    void shoot(vector<Sprite>& bulletsPlayer)
     {
         sf::Sprite newBullet(bulletTexture);//Создаём переменную newBullet которая будет только сдесь, и туда сразу помещаем текстуру пулек.
         Vector2f pos = player.getPosition();//Запрашиваем позицию игрока, чтобы пульки стрелял там где игрок и вылитали от него.
@@ -77,7 +81,7 @@ public:
         bulletsPlayer.push_back(newBullet);//И возвращем это в нашь вектор пуль, чтобы могли по пробелу стрелять ими.
     }
 
-    void move(Direction &direction)
+    void move(Direction& direction)
     {
         if (direction != Direction::stop)
         {
@@ -102,67 +106,54 @@ public:
         return player.getPosition();
     }
 
-    Sprite &getPlayerSprite()
+    Sprite& getPlayerSprite()
     {
         return player;
     }
 
 private:
-   Texture bulletTexture;
-   Texture playerTexture;
-   Sprite player;
+    Sprite player;
 };
 //-------------------------------------------------------------------------------------------------------
+
 class Enemy
 {
 public:
-    Enemy()
-    : enemyTexture("enemy.png"), enemy(enemyTexture), level(0)
+    Enemy(Vector2f pos)
+        : enemy(enemyTexture)
     {
-
+        enemy.setPosition(pos);
     };
 
-    //vector<vector<Vector2f>> enemiesPositions;
+    FloatRect getGlobalBounds() {
+        return enemy.getGlobalBounds();
+    }
 
-
-    //void enemies(vector <Sprite> &enemiesPlayer)
-    //{
-    //    
-    //    for (int i = 0; i < enemiesPositions[level].size(); ++i)
-    //    {
-    //        Sprite enemyTmp1(enemyTexture);
-    //        enemyTmp1.setPosition(enemiesPositions[level][i]);
-    //        enemiesPlayer.push_back(enemyTmp1);
-    //    }
-    //}
-
-    Sprite &getEnemySprite()
+    Sprite& getEnemySprite()
     {
         return enemy;
     }
 
-    //int getLevele()
-    //{
-    //    return level;
-    //}
-
-    //void setLevele(int lev)
-    //{
-    //    level = lev;
-    //}
-
-    int level;
+    void shoot(vector<Sprite>& bulletsEnemies) {
+        sf::Sprite newBullet(bulletTexture);//Создаём переменную newBullet которая будет только сдесь, и туда сразу помещаем текстуру пулек.
+        newBullet.setRotation(degrees(180.f));
+        Vector2f pos = enemy.getPosition();//Запрашиваем позицию игрока, чтобы пульки стрелял там где игрок и вылитали от него.
+        //Ниже, попровляем корддиныты пули, чтобы по центру от игрока стреляли и выше него. (тоесть от его центра носа попровляем)
+        pos.y += 100.f; //Ниже
+        pos.x += 37.5f;//Правее                    
+        newBullet.setPosition(pos);//После всех поправок кординат, ложим эти кординаты в нашу переменную newBullet (уже с готовыми поправленными кординатами)
+        bulletsEnemies.push_back(newBullet);//И возвращем это в нашь вектор пуль, чтобы могли по пробелу стрелять ими.
+    }
 
 private:
-    Texture enemyTexture;
     Sprite enemy;
-    
+
 };
 //-------------------------------------------------------------------------------------------------------
 int main()
 {
-    //int level = 0;
-    
+    int level = 0;
+
     vector<vector<Vector2f>> enemiesPositions;
     enemiesPositions.push_back(
         {
@@ -186,7 +177,7 @@ int main()
         convertColStrToPosition(12, 1),
         });
 
-    enemiesPositions.push_back({});
+    int levelCount = enemiesPositions.size() - 1;
 
     // Create the main window
     sf::RenderWindow window(sf::VideoMode({ 800, 700 }), "SFML window");
@@ -195,18 +186,23 @@ int main()
     vector <Sprite> bulletsPlayer; // Создаём вектор картинок (пулек)
     Direction direction = Direction::stop;
 
-    Enemy enemy;
-    vector <Sprite> enemiesPlayer; // Создаём вектор картинок (врагов)
-    
-    for (int i = 0; i < enemiesPositions[enemy.level].size(); ++i)
+    vector<Enemy> enemiesPlayer; // Создаём вектор картинок (врагов)
+    vector<Sprite> bulletsEnemies; // Создаём вектор картинок (пулек)
+
+    for (int i = 0; i < enemiesPositions[level].size(); ++i)
     {
-        Sprite enemyTmp1(enemy.getEnemySprite());
-        enemyTmp1.setPosition(enemiesPositions[enemy.level][i]);
-        enemiesPlayer.push_back(enemyTmp1);
+        Enemy enemy(enemiesPositions[level][i]);
+        enemiesPlayer.push_back(enemy);
     }
 
     Clock clock; // Создаём часы (начало таймера)
     chrono::milliseconds tick(100); // После какого времени таймер начал делать всё сначала или сброс.
+
+    Clock clockEnemyShoot; // Создаём часы (начало таймера)
+    chrono::milliseconds tickEnemyShoot(1500); // После какого времени таймер начал делать всё сначала или сброс.
+
+    random_device rd;
+    mt19937 gen(rd());
 
     const Font font("ARIAL.TTF");
 
@@ -290,7 +286,7 @@ int main()
                     }
                 }
 
-                if (enemyDead == false) 
+                if (enemyDead == false)
                 {
                     if (pos.y < 40)
                     {
@@ -302,26 +298,41 @@ int main()
                     }
                 }
             }
+
+            for (int i = 0; i < bulletsEnemies.size(); ++i) {
+                Vector2f pos = bulletsEnemies[i].getPosition(); // Запрашиваем позицию пули.
+                pos.y += 50.f; //Назначаем ей направление, куда ей лететь.
+                bulletsEnemies[i].setPosition(pos); // И уже ставим эту позию для пули.
+            }
         }
+
+        if (clockEnemyShoot.getElapsedTime() > Time(tickEnemyShoot)) //Начальное время 0 > 1500.
+        {
+            clockEnemyShoot.restart();
+            if (!enemiesPlayer.empty()) {
+                uniform_int_distribution<> distrib(0, enemiesPlayer.size() - 1);
+                enemiesPlayer[distrib(gen)].shoot(bulletsEnemies);
+            }
+        }
+
 
         if (gameWin == false)
         {
-            if (enemiesPlayer.empty())
+            if (enemiesPlayer.empty() && level < levelCount)
             {
-                ++enemy.level; // Как решить?
-                for (int i = 0; i < enemiesPositions[enemy.level].size(); ++i)
+                ++level;
+                for (int i = 0; i < enemiesPositions[level].size(); ++i)
                 {
-                    Sprite enemyTmp1(enemy.getEnemySprite());
-                    enemyTmp1.setPosition(enemiesPositions[enemy.level][i]);
-                    enemiesPlayer.push_back(enemyTmp1);                    
-                }                
-            } 
-            if (enemy.level == 3)
+                    Enemy enemyTmp1(enemiesPositions[level][i]);
+                    enemiesPlayer.push_back(enemyTmp1);
+                }
+            }
+            if (enemiesPlayer.empty() && level == levelCount)
             {
                 gameWin = true;
             }
         }
-        
+
 
         // Clear screen
         window.clear();
@@ -335,12 +346,17 @@ int main()
 
         for (int i = 0; i < enemiesPlayer.size(); i++)
         {
-            window.draw(enemiesPlayer[i]);
+            window.draw(enemiesPlayer[i].getEnemySprite());
         }
 
         for (int i = 0; i < bulletsPlayer.size(); i++)
         {
             window.draw(bulletsPlayer[i]);
+        }
+
+        for (int i = 0; i < bulletsEnemies.size(); i++)
+        {
+            window.draw(bulletsEnemies[i]);
         }
 
         if (gameWin)
