@@ -5,6 +5,9 @@
 #include <iostream>
 #include <chrono>
 #include <random>
+#include <fstream>
+
+#include <string>
 
 using namespace sf;
 using namespace std;
@@ -12,28 +15,83 @@ using namespace std;
 Texture enemyTexture("enemy.png");
 Texture bulletTexture("bullet.png");
 Texture playerTexture("player.png");
-/*
-* дз
-* добавить врага
-* Попал ли по врагу или нет ?
-* Если попал, то вывести надпись про это
-*/
 
-/*
-* поле 16 колонок на 14 строк (1 клетка 50 на 50)
-* игрок
-* управление
-* стрелять игрока
-* - вектор с ракетами, которые есть на экране сейчас
-* - таймер, по которому будем двигать наши ракеты
-* - добавить событие - выстрел (по кнопке пробел)
-* - удалять ракеты при выходе из зоны видимости экрана
-* враг 1 и научить ее умирать
-* добавить счетчик очков
-* генерация врагов
-* движение врагов на игрока
-* добавить жизни игрока
-*/
+int ochki = 0;
+
+std::string playerName;
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+namespace Game
+{
+    enum class State
+    {
+        NameInput,
+        Play,
+        GameEnd,
+    };
+};
+//------------------------------------------------------------------------------------------------------------------------------------------
+struct LeaderboardEntry
+{
+    std::string name;
+    int score = 0;
+
+    bool operator<(LeaderboardEntry other) const
+    {
+        return score < other.score;
+    }
+    //  bool operator>(LeaderboardEntry other) const
+    //  {
+      //	return score > other.score;
+    //  }
+    //  bool operator==(LeaderboardEntry other) const
+    //  {
+    //      return score == other.score;
+    //  }
+};
+//------------------------------------------------------------------------------------------------------------------------------------------
+std::vector<LeaderboardEntry> leaderboard;
+//------------------------------------------------------------------------------------------------------------------------------------------
+void loadLeaderboard() {
+    std::string filename = "leaderboard.txt";
+    std::ifstream file(filename);
+
+    if (!file.is_open()) {
+        file.close();
+        return;
+    }
+
+    string name;
+    int score;
+    while (file >> name >> score) {
+        LeaderboardEntry entry;
+        entry.name = name;
+        entry.score = score;
+        leaderboard.push_back(entry);
+    }
+    file.close();
+}
+
+void saveLeaderboard() {
+    std::string filename = "leaderboard.txt";
+    std::ofstream file(filename);
+
+    for (int i = 0; i < leaderboard.size(); ++i) {
+        file << leaderboard[i].name << " " << leaderboard[i].score << "\n";
+    }
+    file.close();
+}
+//---------------------------------------------------------------------------------------------------------------
+void addPlayerToLeaderboard() 
+{
+    LeaderboardEntry entry;
+    entry.name = playerName;
+    entry.score = ochki;
+    leaderboard.push_back(entry);
+
+    std::sort(leaderboard.begin(), leaderboard.end());
+    saveLeaderboard();
+}
 //------------------------------------------------------------------------------------------------------------------------------------------
 Vector2f convertColStrToPosition(int col, int str)
 {
@@ -136,7 +194,6 @@ private:
     int life = 3;
 };
 //-------------------------------------------------------------------------------------------------------
-
 class Enemy
 {
 public:
@@ -175,12 +232,13 @@ public:
 
 private:
     Sprite enemy;
-
 };
 //-------------------------------------------------------------------------------------------------------
 int main()
 {
     int level = 0;
+
+    Game::State currentState = Game::State::NameInput;
 
     vector<vector<Vector2f>> enemiesPositions;
     enemiesPositions.push_back(
@@ -243,6 +301,24 @@ int main()
     text.setFillColor(Color::Blue);//Цвет текста
     text.setPosition(convertColStrToPosition(13, 1));
 
+    Text nic(font, L"Ник "); //L - чтоб были русские буквы вместо крякозябры.
+    nic.setCharacterSize(30); //Размер текста
+    nic.setStyle(Text::Bold);//Стиль текста
+    nic.setFillColor(Color::Red);//Цвет текста
+    nic.setPosition(sf::Vector2f(250.0f, 200.0f));
+
+    Text gameWinText(font, L"Подзравляю, Вы выиграли Игру!"); //L - чтоб были русские буквы вместо крякозябры.
+    gameWinText.setCharacterSize(40); //Размер текста
+    gameWinText.setStyle(Text::Bold);//Стиль текста
+    gameWinText.setFillColor(Color::Blue);//Цвет текста
+    gameWinText.setPosition(sf::Vector2f(50.0f - 10, 200.0f - 60));
+
+    Text gameOverText(font, L"Ты лузер, проиграл!"); //L - чтоб были русские буквы вместо крякозябры.
+    gameOverText.setCharacterSize(60); //Размер текста
+    gameOverText.setStyle(Text::Bold);//Стиль текста
+    gameOverText.setFillColor(Color::Red);//Цвет текста
+    gameOverText.setPosition(sf::Vector2f(120.0f - 60, 200.0f - 60));
+
     Text lifesText(font, L":Жизни 3"); //L - чтоб были русские буквы вместо крякозябры.
     lifesText.setCharacterSize(30); //Размер текста
     lifesText.setStyle(Text::Bold);//Стиль текста
@@ -250,114 +326,171 @@ int main()
     lifesText.setPosition(convertColStrToPosition(13, 3));
 
     bool gameWin = false;
-    bool gameOver = false;
+    bool gameOver = false;    
 
-    Text gameWinText(font, L"Подзравляю, Вы выиграли Игру!"); //L - чтоб были русские буквы вместо крякозябры.
-    gameWinText.setCharacterSize(40); //Размер текста
-    gameWinText.setStyle(Text::Bold);//Стиль текста
-    gameWinText.setFillColor(Color::Blue);//Цвет текста
-    gameWinText.setPosition(sf::Vector2f(50.0f - 10, 300.0f - 60));
+    Text textLeaderboard(font, ""); //L - чтоб были русские буквы вместо крякозябры.
+    textLeaderboard.setCharacterSize(20); //Размер текста
+    textLeaderboard.setStyle(Text::Bold);//Стиль текста
+    textLeaderboard.setFillColor(Color::Red);//Цвет текста
+    textLeaderboard.setPosition(sf::Vector2f(120.0f - 60, 300.0f - 60));
 
-    Text gameOverText(font, L"Ты лузер, проиграл!"); //L - чтоб были русские буквы вместо крякозябры.
-    gameOverText.setCharacterSize(60); //Размер текста
-    gameOverText.setStyle(Text::Bold);//Стиль текста
-    gameOverText.setFillColor(Color::Red);//Цвет текста
-    gameOverText.setPosition(sf::Vector2f(120.0f - 60, 300.0f - 60));
-
-    int ochki = 0;
+    Text textEntered(font, "Имя"); //L - чтоб были русские буквы вместо крякозябры.
+    textEntered.setCharacterSize(60); //Размер текста
+    textEntered.setStyle(Text::Bold);//Стиль текста
+    textEntered.setFillColor(Color::Red);//Цвет текста
+    textEntered.setPosition(sf::Vector2f(120.0f - 60, 300.0f - 60));    
 
     // Start the game loop
     while (window.isOpen())
     {
-        // Process events
-		while (const std::optional event = window.pollEvent())
-		{
-			// Close window: exit
-			if (event->is<sf::Event::Closed>())
-				window.close();
-
-
-			if (event->is<Event::KeyPressed>())
-			{
-				if (gameOver == false)
-				{
-					if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) || Keyboard::isKeyPressed(sf::Keyboard::Key::D))
-					{
-						direction = Direction::right;
-					}
-					if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) || Keyboard::isKeyPressed(sf::Keyboard::Key::A))
-					{
-						direction = Direction::left;
-					}
-					if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
-					{
-						player.shoot(bulletsPlayer);
-					}
-				}
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Enter))
-				{
-                    if (gameOver == true || gameWin == true)
-                    {
-                        level = -1;
-                        enemiesPlayer.clear();
-                        player.setLife(3);
-                        ochki = 0;
-                        player.resetPosition();
-                        gameOver = false;
-                        gameWin = false;
-                        clock.restart();
-                        clockEnemyShoot.restart();
-                        clockEnemyMovement.restart();
-                        bulletsEnemies.clear();
-                        bulletsPlayer.clear();
-                    }					
-				}
-			}
-		}
-	
-
-        player.move(direction);
-
-        if (clock.getElapsedTime() > Time(tick)) //Начальное время 0 > 500.
+        switch (currentState)
         {
-            clock.restart();// и как только это произошло (по условию стало больше 500, делаем рестарт.
-
-            for (int i = 0; i < bulletsPlayer.size(); ) // Проходим по всему вектору пулек
+        case Game::State::NameInput:
+        {
+            // События процесса
+            while (const std::optional event = window.pollEvent())
             {
-                Vector2f pos = bulletsPlayer[i].getPosition(); // Запрашиваем позицию пули.
-                pos.y -= 50.f; //Назначаем ей направление, куда ей лететь.
-                bulletsPlayer[i].setPosition(pos); // И уже ставим эту позию для пули.
-                bool enemyDead = false;
+                // Закрыть окно: выход
+                if (event->is<sf::Event::Closed>())
+                    window.close();
 
-                //пробегаемся по врагам и проверяем попала ли пуля в врага
-                for (int e = 0; e < enemiesPlayer.size(); )
+                //Ввод текста
+                if (const auto* textEntered = event->getIf<sf::Event::TextEntered>())
                 {
-                    FloatRect enemyRect = enemiesPlayer[e].getGlobalBounds(); //получаем прямоугольник врага, в который вписывается спрайт врага
-                    FloatRect bulletRect = bulletsPlayer[i].getGlobalBounds();//получаем прямоугольник пули, в который вписывается спрайт пули
-                    // Intersection - это на агл пересечение
-                    std::optional <FloatRect> intersect = bulletRect.findIntersection(enemyRect);
-                    if (intersect.has_value())
+                    if (textEntered->unicode < 128)
                     {
-                        cout << "Hit \n";
-                        // erase удаляет элемент из вектора по его позиции
-                        // позицию получаем через begin() + e, где e - это индекс врага
-                        enemiesPlayer.erase(enemiesPlayer.begin() + e);
-                        bulletsPlayer.erase(bulletsPlayer.begin() + i);
-                        ochki++;
-                        enemyDead = true;
-                        break;
+                        if (textEntered->unicode == '\b' && playerName != "")
+                        {
+                            playerName.pop_back();
+                        }
+                        else if (textEntered->unicode >= 33)
+                        {
+                            playerName += static_cast<char>(textEntered->unicode);
+                        }
                     }
-                    else
+
+                    std::cout << playerName << std::endl;
+                }
+            }
+
+            // Очистка окна.
+            window.clear();
+
+            nic.setString((playerName));
+            window.draw(nic);
+
+            // Очистка окна.
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Enter))
+            {
+                currentState = Game::State::Play;
+                nic.setPosition(sf::Vector2f(600.0f, 0.0f));
+            }
+
+            break;
+        }
+        case Game::State::Play:
+        {
+            // Process events
+            while (const std::optional event = window.pollEvent())
+            {
+                // Close window: exit
+                if (event->is<sf::Event::Closed>())
+                    window.close();
+
+                if (event->is<Event::KeyPressed>())
+                {
+                    if (gameOver == false)
                     {
-                        ++e;
+                        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) || Keyboard::isKeyPressed(sf::Keyboard::Key::D))
+                        {
+                            direction = Direction::right;
+                        }
+                        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) || Keyboard::isKeyPressed(sf::Keyboard::Key::A))
+                        {
+                            direction = Direction::left;
+                        }
+                        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
+                        {
+                            player.shoot(bulletsPlayer);
+                        }
+                    }
+                }
+            }
+
+
+            player.move(direction);
+
+            if (clock.getElapsedTime() > Time(tick)) //Начальное время 0 > 500.
+            {
+                clock.restart();// и как только это произошло (по условию стало больше 500, делаем рестарт.
+
+                for (int i = 0; i < bulletsPlayer.size(); ) // Проходим по всему вектору пулек
+                {
+                    Vector2f pos = bulletsPlayer[i].getPosition(); // Запрашиваем позицию пули.
+                    pos.y -= 50.f; //Назначаем ей направление, куда ей лететь.
+                    bulletsPlayer[i].setPosition(pos); // И уже ставим эту позию для пули.
+                    bool enemyDead = false;
+
+                    //пробегаемся по врагам и проверяем попала ли пуля в врага
+                    for (int e = 0; e < enemiesPlayer.size(); )
+                    {
+                        FloatRect enemyRect = enemiesPlayer[e].getGlobalBounds(); //получаем прямоугольник врага, в который вписывается спрайт врага
+                        FloatRect bulletRect = bulletsPlayer[i].getGlobalBounds();//получаем прямоугольник пули, в который вписывается спрайт пули
+                        // Intersection - это на агл пересечение
+                        std::optional <FloatRect> intersect = bulletRect.findIntersection(enemyRect);
+                        if (intersect.has_value())
+                        {
+                            cout << "Hit \n";
+                            // erase удаляет элемент из вектора по его позиции
+                            // позицию получаем через begin() + e, где e - это индекс врага
+                            enemiesPlayer.erase(enemiesPlayer.begin() + e);
+                            bulletsPlayer.erase(bulletsPlayer.begin() + i);
+                            ochki++;
+                            enemyDead = true;
+                            break;
+                        }
+                        else
+                        {
+                            ++e;
+                        }
+                    }
+
+                    if (enemyDead == false)
+                    {
+                        if (pos.y < 40)
+                        {
+                            bulletsPlayer.erase(bulletsPlayer.begin() + i);
+                        }
+                        else
+                        {
+                            ++i;
+                        }
                     }
                 }
 
-                if (enemyDead == false)
+                //Попала ли пуля в игрока
+                for (int i = 0; i < bulletsEnemies.size(); )
                 {
-                    if (pos.y < 40)
+                    Vector2f pos = bulletsEnemies[i].getPosition(); // Запрашиваем позицию пули.
+                    pos.y += 50.f; //Назначаем ей направление, куда ей лететь.
+                    bulletsEnemies[i].setPosition(pos); // И уже ставим эту позию для пули.
+
+                    FloatRect playerRect = player.getPlayerSprite().getGlobalBounds();
+                    FloatRect bulletRect = bulletsEnemies[i].getGlobalBounds();
+
+                    std::optional <FloatRect> intersect = bulletRect.findIntersection(playerRect);
+                    if (intersect.has_value())
                     {
-                        bulletsPlayer.erase(bulletsPlayer.begin() + i);
+                        bulletsEnemies.erase(bulletsEnemies.begin() + i);
+                        //player.getLife();
+                        player.livesReduce();
+                        cout << "Hit \n";
+                        if (player.getLife() == 0)
+                        {
+                            gameOver = true;
+                            currentState = Game::State::GameEnd;
+                            addPlayerToLeaderboard();
+                        }
                     }
                     else
                     {
@@ -366,115 +499,155 @@ int main()
                 }
             }
 
-            //Попала ли пуля в игрока
-            for (int i = 0; i < bulletsEnemies.size(); ) 
+            if (gameOver == false)
             {
-                Vector2f pos = bulletsEnemies[i].getPosition(); // Запрашиваем позицию пули.
-                pos.y += 50.f; //Назначаем ей направление, куда ей лететь.
-                bulletsEnemies[i].setPosition(pos); // И уже ставим эту позию для пули.
-
-                FloatRect playerRect = player.getPlayerSprite().getGlobalBounds();
-                FloatRect bulletRect = bulletsEnemies[i].getGlobalBounds();
-
-                std::optional <FloatRect> intersect = bulletRect.findIntersection(playerRect);
-                if (intersect.has_value())
+                if (clockEnemyShoot.getElapsedTime() > Time(tickEnemyShoot)) //Начальное время 0 > 1500.
                 {
-                    bulletsEnemies.erase(bulletsEnemies.begin() + i);
-                    //player.getLife();
-                    player.livesReduce();
-                    cout << "Hit \n";
-                    if (player.getLife() == 0)
+                    clockEnemyShoot.restart();
+                    if (!enemiesPlayer.empty())
                     {
-                        gameOver = true;
-                    }   
-                }
-                else
-                {
-                    ++i;
+                        uniform_int_distribution<> distrib(0, enemiesPlayer.size() - 1);
+                        enemiesPlayer[distrib(gen)].shoot(bulletsEnemies);
+                    }
                 }
             }
-        }
 
-        if (gameOver == false)
-        {
-            if (clockEnemyShoot.getElapsedTime() > Time(tickEnemyShoot)) //Начальное время 0 > 1500.
+            if (gameWin == false)
             {
-                clockEnemyShoot.restart();
-                if (!enemiesPlayer.empty())
+                if (enemiesPlayer.empty() && level < levelCount)
                 {
-                    uniform_int_distribution<> distrib(0, enemiesPlayer.size() - 1);
-                    enemiesPlayer[distrib(gen)].shoot(bulletsEnemies);
+                    ++level;
+                    for (int i = 0; i < enemiesPositions[level].size(); ++i)
+                    {
+                        Enemy enemyTmp1(enemiesPositions[level][i]);
+                        enemiesPlayer.push_back(enemyTmp1);
+                    }
+                }
+                if (enemiesPlayer.empty() && level == levelCount)
+                {
+                    gameWin = true;
+                    currentState = Game::State::GameEnd;
+                    addPlayerToLeaderboard();
                 }
             }
-        }
 
-        if (gameWin == false)
-        {
-            if (enemiesPlayer.empty() && level < levelCount)
+            //Движение врагов
+            if (gameOver == false)
             {
-                ++level;
-                for (int i = 0; i < enemiesPositions[level].size(); ++i)
+                if (clockEnemyMovement.getElapsedTime() > Time(tickEnemyMovement))
                 {
-                    Enemy enemyTmp1(enemiesPositions[level][i]);
-                    enemiesPlayer.push_back(enemyTmp1);
+                    clockEnemyMovement.restart();
+                    for (int i = 0; i < enemiesPlayer.size(); i++)
+                    {
+                        enemiesPlayer[i].move();
+                    }
                 }
             }
-            if (enemiesPlayer.empty() && level == levelCount)
-            {
-                gameWin = true;
-            }
-        }
 
-        //Движение врагов
-        if (gameOver == false)
-        {
-            if (clockEnemyMovement.getElapsedTime() > Time(tickEnemyMovement))
+            // Clear screen
+            window.clear();
+
+            // Draw it
+            window.draw(player.getPlayerSprite());
+
+            //Рисуем вывод очков на доске
+            text.setString(L"очки " + std::to_string(ochki));//Конвертируем int в string.(to_string)
+            window.draw(text);
+
+            lifesText.setString(L"Жизни " + std::to_string(player.getLife()));//Конвертируем int в string.(to_string)
+            window.draw(lifesText);
+
+            for (int i = 0; i < enemiesPlayer.size(); i++)
             {
-                clockEnemyMovement.restart();
-                for (int i = 0; i < enemiesPlayer.size(); i++)
+                window.draw(enemiesPlayer[i].getEnemySprite());
+            }
+
+            for (int i = 0; i < bulletsPlayer.size(); i++)
+            {
+                window.draw(bulletsPlayer[i]);
+            }
+
+            for (int i = 0; i < bulletsEnemies.size(); i++)
+            {
+                window.draw(bulletsEnemies[i]);
+            }            
+
+            nic.setString(L"Ник " + (playerName));
+            window.draw(nic);            
+
+            break;
+        }
+        case Game::State::GameEnd:
+        {
+            while (const std::optional event = window.pollEvent())
+            {
+                // Close window: exit
+                if (event->is<sf::Event::Closed>())
+                    window.close();
+
+
+                if (event->is<Event::KeyPressed>())
                 {
-                    enemiesPlayer[i].move();
+                    if (gameOver == false)
+                    {
+                        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) || Keyboard::isKeyPressed(sf::Keyboard::Key::D))
+                        {
+                            direction = Direction::right;
+                        }
+                        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) || Keyboard::isKeyPressed(sf::Keyboard::Key::A))
+                        {
+                            direction = Direction::left;
+                        }
+                        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
+                        {
+                            player.shoot(bulletsPlayer);
+                        }
+                    }
+                    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Enter))
+                    {
+                        if (gameOver == true || gameWin == true)
+                        {
+                            level = -1;
+                            enemiesPlayer.clear();
+                            player.setLife(3);
+                            ochki = 0;
+                            player.resetPosition();
+                            gameOver = false;
+                            gameWin = false;
+                            clock.restart();
+                            clockEnemyShoot.restart();
+                            clockEnemyMovement.restart();
+                            bulletsEnemies.clear();
+                            bulletsPlayer.clear();
+                            currentState = Game::State::Play;
+                        }
+                    }
                 }
             }
-        }        
 
-        // Clear screen
-        window.clear();
+            if (gameWin)
+            {
+                window.draw(gameWinText);
+            }
 
-        // Draw it
-        window.draw(player.getPlayerSprite());
+            if (gameOver)
+            {
+                window.draw(gameOverText);
+            }
 
-        //Рисуем вывод очков на доске
-        text.setString(L"очки " + std::to_string(ochki));//Конвертируем int в string.(to_string)
-        window.draw(text);
+            std::string leaderboardText = "Leaderboard:\n";
+            for (int i = leaderboard.size() - 1; i >= 0; --i) {
+                leaderboardText += leaderboard[i].name + " " + std::to_string(leaderboard[i].score) + "\n";
+            }
+            textLeaderboard.setString(leaderboardText);
+            window.draw(textLeaderboard);
 
-        lifesText.setString(L"Жизни " + std::to_string(player.getLife()));//Конвертируем int в string.(to_string)
-        window.draw(lifesText);
-
-        for (int i = 0; i < enemiesPlayer.size(); i++)
-        {
-            window.draw(enemiesPlayer[i].getEnemySprite());
+            break;
         }
-
-        for (int i = 0; i < bulletsPlayer.size(); i++)
-        {
-            window.draw(bulletsPlayer[i]);
+        default:
+            break;
         }
-
-        for (int i = 0; i < bulletsEnemies.size(); i++)
-        {
-            window.draw(bulletsEnemies[i]);
-        }
-
-        if (gameWin)
-        {
-            window.draw(gameWinText);
-        }
-
-        if (gameOver)
-        {
-            window.draw(gameOverText);
-        }
+        
 
         // Update the window
         window.display();
