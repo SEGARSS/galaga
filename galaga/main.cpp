@@ -65,6 +65,7 @@ void loadLeaderboard() {
 
     string name;
     int score;
+
     while (file >> name >> score) {
         LeaderboardEntry entry;
         entry.name = name;
@@ -74,7 +75,8 @@ void loadLeaderboard() {
     file.close();
 }
 
-void saveLeaderboard() {
+void saveLeaderboard() 
+{
     std::string filename = "leaderboard.txt";
     std::ofstream file(filename);
 
