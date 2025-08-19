@@ -31,6 +31,8 @@ namespace Game
     };
 };
 //------------------------------------------------------------------------------------------------------------------------------------------
+Game::State currentState = Game::State::NameInput;
+//------------------------------------------------------------------------------------------------------------------------------------------
 struct LeaderboardEntry
 {
     std::string name;
@@ -76,7 +78,8 @@ void saveLeaderboard() {
     std::string filename = "leaderboard.txt";
     std::ofstream file(filename);
 
-    for (int i = 0; i < leaderboard.size(); ++i) {
+    for (int i = 0; i < leaderboard.size(); ++i) 
+    {
         file << leaderboard[i].name << " " << leaderboard[i].score << "\n";
     }
     file.close();
@@ -236,9 +239,7 @@ private:
 //-------------------------------------------------------------------------------------------------------
 int main()
 {
-    int level = 0;
-
-    Game::State currentState = Game::State::NameInput;
+    int level = 0;    
 
     vector<vector<Vector2f>> enemiesPositions;
     enemiesPositions.push_back(
@@ -624,6 +625,9 @@ int main()
                     }
                 }
             }
+
+            // Очистка окна.
+            window.clear();
 
             if (gameWin)
             {
