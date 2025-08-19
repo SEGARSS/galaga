@@ -341,7 +341,9 @@ int main()
     textEntered.setCharacterSize(60); //Размер текста
     textEntered.setStyle(Text::Bold);//Стиль текста
     textEntered.setFillColor(Color::Red);//Цвет текста
-    textEntered.setPosition(sf::Vector2f(120.0f - 60, 300.0f - 60));    
+    textEntered.setPosition(sf::Vector2f(120.0f - 60, 300.0f - 60));   
+
+    loadLeaderboard();
 
     // Start the game loop
     while (window.isOpen())
