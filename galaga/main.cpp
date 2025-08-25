@@ -29,7 +29,7 @@ class Enemy;
 
 vector<Enemy> enemiesPlayer; // Создаём вектор врагов
 vector<Sprite> bulletsEnemies; // Создаём вектор картинок (пулек)
-vector <Sprite> bulletsPlayer; // Создаём вектор картинок (пулек)
+vector <Sprite> bulletsPlayer; // Создаём вектор картинок (пулек).
 
 vector<vector<Vector2f>> enemiesPositions;
 
