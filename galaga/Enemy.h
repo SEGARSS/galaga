@@ -10,7 +10,6 @@ public:
     void shoot() override;
     void move(); 
 
-    Sprite enemy;
 
 private:
 };

@@ -20,7 +20,6 @@ public:
     bool isHitted(const FloatRect& bulletRect);
     int getLife();     
 
-    Sprite player;
 
 private:
     int life = 3;

@@ -17,10 +17,6 @@
 using namespace sf;
 using namespace std;
 
-Texture enemyTexture("enemy.png");
-Texture bulletTexture("bullet.png");
-Texture playerTexture("player.png");
-
 int ochki = 0;
 
 std::string playerName;

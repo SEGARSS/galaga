@@ -2,9 +2,9 @@
 
 //--------------------------------------------------------------------------------------------
 Base::Base(Texture& texture, Vector2f position)
-    :texture(texture), Sprite(bodu_)
+:bodu_(texture)
 {
-
+    bodu_.setPosition(position);
 }
 //--------------------------------------------------------------------------------------------
 void Base::draw(RenderWindow& window)

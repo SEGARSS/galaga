@@ -4,22 +4,22 @@
 using namespace sf;
 using namespace std;
 
-extern Texture playerTexture("player.png");
-extern Texture bulletTexture("bullet.png");
+Texture playerTexture("player.png");
+Texture bulletTexture("bullet.png");
 
 extern vector <Sprite> bulletsPlayer;
 
 //--------------------------------------------------------------------------------------------------------------------------------
 Player::Player()
-    : player(playerTexture)
+: Base(playerTexture, convertColStrToPosition(7, 12))
 {
-    player.setPosition(convertColStrToPosition(7, 12));
+
 };
 //--------------------------------------------------------------------------------------------------------------------------------
 void Player::shoot()
 {
     sf::Sprite newBullet(bulletTexture);//—оздаЄм переменную newBullet котора€ будет только сдесь, и туда сразу помещаем текстуру пулек.
-    Vector2f pos = player.getPosition();//«апрашиваем позицию игрока, чтобы пульки стрел€л там где игрок и вылитали от него.
+    Vector2f pos = bodu_.getPosition();//«апрашиваем позицию игрока, чтобы пульки стрел€л там где игрок и вылитали от него.
     //Ќиже, попровл€ем корддиныты пули, чтобы по центру от игрока стрел€ли и выше него. (тоесть от его центра носа попровл€ем)
     pos.y -= 50.f; //¬ыше
     pos.x += 12.5f;//ѕравее                    
@@ -31,7 +31,7 @@ void Player::move(Direction& direction)
 {
     if (direction != Direction::stop)
     {
-        Vector2f pos = player.getPosition();
+        Vector2f pos = bodu_.getPosition();
 
         if (direction == Direction::left && pos.x > 50)
         {
@@ -42,14 +42,14 @@ void Player::move(Direction& direction)
             pos.x += 50.f;
         }
 
-        player.setPosition(pos);
+        bodu_.setPosition(pos);
         direction = Direction::stop;
     }
 }
 //--------------------------------------------------------------------------------------------------------------------------------
 void Player::resetPosition()
 {
-    player.setPosition(convertColStrToPosition(7, 12));
+    bodu_.setPosition(convertColStrToPosition(7, 12));
 }
 //--------------------------------------------------------------------------------------------------------------------------------
 void Player::setLife(int l)
@@ -64,13 +64,13 @@ void Player::livesReduce()
 //--------------------------------------------------------------------------------------------------------------------------------
 Vector2f Player::getPosition()
 {
-    return player.getPosition();
+    return bodu_.getPosition();
 }
 //--------------------------------------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------------------------------------
 bool Player::isHitted(const FloatRect& bulletRect)
 {
-    FloatRect playerRect = player.getGlobalBounds();
+    FloatRect playerRect = bodu_.getGlobalBounds();
     std::optional <FloatRect> intersect = bulletRect.findIntersection(playerRect);
     return intersect.has_value();
 }

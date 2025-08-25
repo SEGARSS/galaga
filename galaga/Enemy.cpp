@@ -1,7 +1,7 @@
 #include "Enemy.h"
 
 Texture enemyTexture("enemy.png");
-Texture bulletTexture("bullet.png");
+extern Texture bulletTexture;
 
 using namespace sf;
 using namespace std;
@@ -10,16 +10,16 @@ extern vector<Sprite> bulletsEnemies;
 
 //--------------------------------------------------------------------------------------------
 Enemy::Enemy(Vector2f pos)
-: enemy(enemyTexture)
+: Base(enemyTexture, pos)
 {
-    enemy.setPosition(pos);
+
 };
 //--------------------------------------------------------------------------------------------
 void Enemy::shoot()
 {
     Sprite newBullet(bulletTexture);//—оздаЄм переменную newBullet котора€ будет только сдесь, и туда сразу помещаем текстуру пулек.
     newBullet.setRotation(degrees(180.f));
-    Vector2f pos = enemy.getPosition();//«апрашиваем позицию игрока, чтобы пульки стрел€л там где игрок и вылитали от него.
+    Vector2f pos = bodu_.getPosition();//«апрашиваем позицию игрока, чтобы пульки стрел€л там где игрок и вылитали от него.
     //Ќиже, попровл€ем корддиныты пули, чтобы по центру от игрока стрел€ли и выше него. (тоесть от его центра носа попровл€ем)
     pos.y += 100.f; //Ќиже
     pos.x += 37.5f;//ѕравее                    
@@ -29,9 +29,9 @@ void Enemy::shoot()
 //--------------------------------------------------------------------------------------------
 void Enemy::move()
 {
-    Vector2f pos = enemy.getPosition();
+    Vector2f pos = bodu_.getPosition();
     pos.y += 50;
-    enemy.setPosition(pos);
+    bodu_.setPosition(pos);
 }
 //--------------------------------------------------------------------------------------------
 

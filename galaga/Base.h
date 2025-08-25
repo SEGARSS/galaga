@@ -14,7 +14,7 @@ using namespace sf;
 class Base
 {
 public:
-	Base(Texture& texture,Vector2f position);
+	Base(Texture& texture, Vector2f position);
 
 	void draw(RenderWindow& window);
 	FloatRect getGlobalBounds();
@@ -24,6 +24,5 @@ public:
 
 	Sprite bodu_;
 
-private:
-	
+private:	
 };
